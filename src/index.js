@@ -1,16 +1,36 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
+import "./index.css"; // ローカルファイル読み込み
 
 class Square extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      value: null
+    };
+  }
   render() {
-    return <button className="square">{/* TODO */}</button>;
+    return (
+      <button
+        className="square"
+        // onClick={() => console.log("click! => ", this.props.value)}
+        onClick={() => {
+          this.setState({ value: "X" });
+          console.log("click! => state: ", this.state.value); // ここじゃ確認できない
+          console.log("click! => props: ", this.props.value);
+        }}
+      >
+        {/* ここなら確認できる */}
+        {console.log("click! => state: ", this.state.value)}
+        {this.state.value}
+      </button>
+    );
   }
 }
 
 class Board extends React.Component {
   renderSquare(i) {
-    return <Square />;
+    return <Square value={i} />;
   }
 
   render() {
