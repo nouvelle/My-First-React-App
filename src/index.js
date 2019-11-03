@@ -2,39 +2,61 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css"; // ローカルファイル読み込み
 
-class Square extends React.Component {
+// React では、イベントを表す props には on[Event] という名前
+// イベントを処理するメソッドには handle[Event] という名前
+// を付けるのが慣習となっている
+
+const Square = props => {
+  return (
+    <button className="square" onClick={props.onClick}>
+      {props.value}
+    </button>
+  );
+};
+
+/*  Board  */
+class Board extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: null
+      squares: Array(9).fill(null),
+      xIsNext: true
     };
   }
-  render() {
+
+  handleClick = index => {
+    // 配列のコピーを作成してから、コピーした配列を書き換える(immutability)
+    const newSquares = this.state.squares.slice();
+
+    // 勝者が決まってるかどうかをチェック
+    if (calculateWinner(newSquares) || newSquares[index]) return;
+
+    newSquares[index] = this.state.xIsNext ? "X" : "◯";
+    this.setState({
+      squares: newSquares,
+      xIsNext: !this.state.xIsNext
+    });
+  };
+
+  renderSquare(i) {
     return (
-      <button
-        className="square"
-        // onClick={() => console.log("click! => ", this.props.value)}
-        onClick={() => {
-          this.setState({ value: "X" });
-          console.log("click! => state: ", this.state.value); // ここじゃ確認できない
-          console.log("click! => props: ", this.props.value);
-        }}
-      >
-        {/* ここなら確認できる */}
-        {console.log("click! => state: ", this.state.value)}
-        {this.state.value}
-      </button>
+      // Square に対して "value", "onClick" を渡す
+      <Square
+        value={this.state.squares[i]}
+        // Reactがクリックに対してイベントリスナを設定 => Square クラスへ。
+        onClick={() => this.handleClick(i)}
+      />
     );
   }
-}
-
-class Board extends React.Component {
-  renderSquare(i) {
-    return <Square value={i} />;
-  }
 
   render() {
-    const status = "Next player: X";
+    const winner = calculateWinner(this.state.squares);
+    let status;
+    if (winner) {
+      status = "Winner: " + winner;
+    } else {
+      status = "Next player: " + (this.state.xIsNext ? "X" : "◯");
+    }
 
     return (
       <div>
@@ -59,6 +81,7 @@ class Board extends React.Component {
   }
 }
 
+/*  Game  */
 class Game extends React.Component {
   render() {
     return (
@@ -74,6 +97,29 @@ class Game extends React.Component {
     );
   }
 }
+
+const calculateWinner = squares => {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+  let result = null;
+  lines.forEach((val, i) => {
+    const [a, b, c] = val;
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      // "X" or "◯" を代入
+      result = squares[a];
+    }
+  });
+
+  return result;
+};
 
 // ========================================
 
